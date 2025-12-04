@@ -59,7 +59,44 @@ public class Day3(ITestOutputHelper testOutputHelper)
 
     private long Part2Solution(string[] lines)
     {
-        return 0;
+        long total = 0;
+        
+        foreach (var line in lines)
+        {
+            int[] currNum = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            int currNumIdx = 0;
+            int targetNumIdx = -1;
+            
+            for (int i = 0; i < line.Length; i++)
+            {
+                if (currNumIdx == 12)
+                {
+                    long result = long.Parse(string.Join("", currNum));
+                    total += result;
+                    break;
+                }
+                
+                for (int j = targetNumIdx + 1; j < line.Length; j++)
+                {
+                    if (j > line.Length - (12 - currNumIdx))
+                    {
+                        break;
+                    }
+                    
+                    var targetNum = Convert.ToInt32(line[j].ToString());
+
+                    if (targetNum > currNum[currNumIdx])
+                    {
+                        currNum[currNumIdx] = targetNum;
+                        targetNumIdx = j;
+                    }
+                }
+                
+                currNumIdx++;
+            }
+        }
+
+        return total;
     }
     
     [Fact]
@@ -67,7 +104,7 @@ public class Day3(ITestOutputHelper testOutputHelper)
     {
         var lines = Utils.ReadLines("test.txt");
         long solution = Part2Solution(lines);
-        Assert.Equal(4174379265, solution);
+        Assert.Equal(3121910778619, solution);
     }
 
     [Fact]
