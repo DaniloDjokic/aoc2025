@@ -21,9 +21,9 @@ public static class Utils
 
     public class Point(int x, int y, char value)
     {
-        private int X { get; init; } = x;
-        private int Y { get; init; } = y;
-        public char Value { get; init; } = value;
+        public int X { get; init; } = x;
+        public int Y { get; init; } = y;
+        public char Value { get; set; } = value;
 
         private Point FromPoint(Point point)
         {
