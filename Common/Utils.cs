@@ -95,4 +95,21 @@ public static class Utils
 
         return points;
     }
+
+    public class Range(long start, long end)
+    {
+        public long Start { get; init; } = start;
+        public long End { get; init; } = end;
+
+        public Range? OvarlapsWith(Range other)
+        {
+            var overlaps = (this.Start >= other.Start && this.Start <= other.End) ||
+                    (this.End >= other.End && this.End <= other.End);
+
+            if (!overlaps)
+                return null;
+
+            return null;
+        }
+    }
 }
