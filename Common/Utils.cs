@@ -103,12 +103,39 @@ public static class Utils
 
         public Range? OvarlapsWith(Range other)
         {
-            var overlaps = (this.Start >= other.Start && this.Start <= other.End) ||
-                    (this.End >= other.End && this.End <= other.End);
-
-            if (!overlaps)
-                return null;
-
+            //Case 0: equal
+            if (this.Start == other.Start && this.End == other.End)
+            {
+                return this;
+            }
+            
+            //Case 1: overlaps on left
+            if (this.Start <= other.Start && 
+                this.End >= other.Start && this.End <= other.End)
+            {
+                return new Range(this.Start, other.End);
+            }
+            
+            //Case 2: overlaps on right
+            if (this.Start >= other.Start && this.Start <= other.End
+                                          && this.End >= other.End)
+            {
+                return new Range(other.Start, this.End);
+            }
+            
+            //Case 3: this overlaps other
+            if (this.Start <= other.Start && this.End >= other.End)
+            {
+                return this;
+            }
+            
+            //Case 4: other overlaps this
+            if (other.Start <= this.Start && other.End >= this.End)
+            {
+                return other;
+            }
+            
+            //Case 5: doesn't overlap
             return null;
         }
     }
