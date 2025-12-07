@@ -67,7 +67,7 @@ public class Day6(ITestOutputHelper testOutputHelper)
                  var i1 = i;
                  numsToProcess = [..numsToProcess, ..nums.Where(x => x.Item2 == i1).Select(x => x.Item1)];
              }
-
+             
              ulong toAdd = op switch
              {
                  Operation.Add => numsToProcess.Aggregate((acc, x) => acc + x),
@@ -100,7 +100,85 @@ public class Day6(ITestOutputHelper testOutputHelper)
 
     private long Part2Solution(string[] lines)
     {
-        return 0;
+        var nums = ReadNumbers(lines);
+        var ops = 
+            lines[^1]
+                .Split(" ")
+                .Where(x => x != string.Empty)
+                .Select(x => x switch
+                {
+                    "*" => Operation.Multiply,
+                    "+" => Operation.Add,
+                    _ => throw new Exception("What")
+                })
+                .ToList();
+        
+        Assert.Equal(nums.Count, ops.Count);
+
+        long total = nums.Zip(ops, (numsToProcess, op) =>
+            {
+                return op switch
+                {
+                    Operation.Add => numsToProcess.Aggregate((acc, x) => acc + x),
+                    Operation.Multiply => numsToProcess.Aggregate((acc, x) => acc * x),
+                    _ => throw new Exception("What?")
+                };
+            })
+            .Aggregate((acc, x) => acc + x);
+        
+        return total;
+    }
+
+    private List<List<long>> ReadNumbers(string[] lines)
+    {
+        List<List<long>> nums = [];
+        
+        var lastLine = lines[^1];
+
+        var indices =
+            lastLine
+                .Select((el, idx) => new {el, idx})
+                .Where(x => x.el is '+' or '*')
+                .Select(x => x.idx)
+                .ToList();
+        
+        indices.Add(lastLine.Length + 1);
+        
+        var numWidths = 
+            indices.Zip(indices.Skip(1), (a,b) => b - a - 1).ToList();
+        
+        var pointer = 0;
+        foreach (var numWidth in numWidths)
+        {
+            var start = pointer;
+            var end =  pointer + numWidth;
+
+            List<string> numsInWindowStr = [];
+            for (int i = 0; i < lines.Length - 1; i++)
+            {
+                var line = lines[i];
+                numsInWindowStr.Add(line[start..end]);
+            }
+
+            List<long> numsInWindow = [];
+
+            for (int i = 0; i < end - start; i++)
+            {
+                string num = "";
+                
+                foreach (var numStr in numsInWindowStr)
+                {
+                    num += numStr[i].ToString();
+                }
+                
+                numsInWindow.Add(int.Parse(num));
+            }
+
+            nums.Add(numsInWindow);
+            pointer = end + 1;
+        }
+
+        return nums;
     }
     
     [Fact]
@@ -108,7 +186,7 @@ public class Day6(ITestOutputHelper testOutputHelper)
     {
         var lines = Utils.ReadLines("test.txt");
         var result = Part2Solution(lines);
-        Assert.Equal(14, result);
+        Assert.Equal(3263827, result);
     }
 
     [Fact]
