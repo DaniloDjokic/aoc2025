@@ -1,7 +1,49 @@
 ﻿namespace Common;
 
+public static class Extensions
+{
+    extension(Utils.Point[,] grid)
+    {
+        public List<Utils.Point> FilterGrid(Func<Utils.Point, bool> predicate)
+        {
+            List<Utils.Point> points = [];
+
+            foreach (var point in grid)
+            {
+                if (predicate(point))
+                {
+                    points.Add(point);
+                }
+            }
+        
+            return points;
+        }
+
+        public Utils.Point GetSpecificPoint(Func<Utils.Point, bool> predicate)
+        {
+            List<Utils.Point> points = [];
+
+            foreach (var point in grid)
+            {
+                if (predicate(point))
+                {
+                    points.Add(point);
+                }
+            }
+
+            if (points.Count != 1)
+            {
+                throw new ArgumentException("There are two points with the same value.");
+            }
+        
+            return points[0];
+        }
+    }
+}
+
 public static class Utils
 {
+    
     public static string[] ReadLines(string fileName)
     {
         string projectRoot = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent.Parent.FullName;
@@ -19,7 +61,7 @@ public static class Utils
          return num == 0 ? 1 : (int)Math.Floor(Math.Log10(Math.Abs(num))) + 1;
     }
 
-    public class Point(int x, int y, char value)
+    public class Point(int x, int y, char value) : IEquatable<Point>
     {
         public int X { get; init; } = x;
         public int Y { get; init; } = y;
@@ -40,6 +82,13 @@ public static class Utils
             }
             
             return FromPoint(grid[newPos.newX, newPos.newY]);
+        }
+
+        public bool Equals(Point? other)
+        {
+            if (other is null) return false;
+            
+            return this.X == other.X && this.Y == other.Y;
         }
     }
 
