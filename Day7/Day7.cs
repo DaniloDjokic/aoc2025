@@ -1,4 +1,5 @@
-﻿using Common;
+﻿using System.Diagnostics.CodeAnalysis;
+using Common;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -6,25 +7,35 @@ namespace Day7;
 
 public class Day7(ITestOutputHelper testOutputHelper)
 {
-    class Splitter(Utils.Point point, bool isActivated) : IComparable<Splitter>
+    class Splitter(Utils.Point point) : IComparable<Splitter>, IEquatable<Splitter>
     {
-        public Utils.Point Point { get; set; } = point;
-        public bool IsActivated { get; set; } = isActivated;
+        public Utils.Point Point { get; } = point;
         
         public int CompareTo(Splitter? other)
         {
-            if (other is null)
-            {
-                return 1;
-            }
-            
-            return this.Point.Y.CompareTo(other.Point.Y);
+            if (other != null) return this.Point.Y.CompareTo(other.Point.Y);
+            return -1;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as  Splitter);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Point.X, Point.Y);
+        }
+
+        public bool Equals(Splitter? other)
+        {
+            return other != null && this.Point.X == other.Point.X && this.Point.Y == other.Point.Y;
         }
     }
     
     private long Part1Solution(Utils.Point[,] grid)
     {
-        var splitters = grid.FilterGrid(x => x.Value == '^').Select(x => new Splitter(x, false)).ToList();
+        var splitters = grid.FilterGrid(x => x.Value == '^').Select(x => new Splitter(x)).ToList();
         var start = grid.GetSpecificPoint(x => x.Value == 'S');
         
         return ProcessBeam(start, splitters, grid.GetLength(0));
@@ -97,6 +108,61 @@ public class Day7(ITestOutputHelper testOutputHelper)
     {
         var points = Utils.ReadGrid("input.txt");
         var result = Part1Solution(points);
+        testOutputHelper.WriteLine(result.ToString());
+    }
+
+    private long Part2Solution(Utils.Point[,] grid)
+    {
+        var splitters = grid.FilterGrid(x => x.Value == '^').Select(x => new Splitter(x)).ToList();
+        var start = grid.GetSpecificPoint(x => x.Value == 'S');
+
+        return ProcessBeam2(start, splitters, []);
+    }
+
+    private long ProcessBeam2(Utils.Point start, List<Splitter> splitters, Dictionary<Splitter, long> memo)
+    {
+        long totalTimelines = 0;
+        
+        var nextSplitter = GetNextSplitter(start, splitters);
+
+        if (nextSplitter is not null)
+        {
+            if (memo.TryGetValue(nextSplitter, out var value))
+            {
+                totalTimelines += value;
+            }
+            else
+            {
+                var left = new Utils.Point(nextSplitter.Point.X, nextSplitter.Point.Y - 1, '^');
+                var right = new Utils.Point(nextSplitter.Point.X, nextSplitter.Point.Y + 1, '^');
+                
+                totalTimelines += ProcessBeam2(left, splitters, memo);
+                totalTimelines += ProcessBeam2(right, splitters, memo);
+                
+                memo[nextSplitter] = totalTimelines;
+            }
+        }
+        else
+        {
+            totalTimelines = 1;
+        }
+
+        return totalTimelines;
+    }
+    
+    [Fact]
+    public void Part2_TestInput()
+    {
+        var points = Utils.ReadGrid("test.txt");
+        var result = Part2Solution(points);
+        Assert.Equal(40, result);
+    }
+
+    [Fact]
+    public void Part2_RealInput()
+    {
+        var points = Utils.ReadGrid("input.txt");
+        var result = Part2Solution(points);
         testOutputHelper.WriteLine(result.ToString());
     }
 }
