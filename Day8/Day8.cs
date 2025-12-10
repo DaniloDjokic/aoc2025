@@ -181,7 +181,10 @@ public class Day8(ITestOutputHelper testOutputHelper)
         foreach (var circuit in circuits)
         {
             var listSet = new HashSet<JunctionBox>(circuit);
-            var matchingGroups = groups.Where(g => g.Intersect(listSet).Any()).ToList();
+            var matchingGroups = 
+                groups
+                    .Where(g => g.Intersect(listSet).Any())
+                    .ToList();
 
             if (matchingGroups.Any())
             {
